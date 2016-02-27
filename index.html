@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Geburten und Sterbefälle in Moers</title>
+  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+  <style>
+  *{
+    margin:0;
+    padding:0;
+    -webkit-box-sizing:border-box;
+    -moz-box-sizing:border-box;
+    box-sizing:border-box;
+  }
+  body,html,#sterbe-map{
+    height:100%;
+  }
+  body{
+    color:#333;
+    font-family:sans-serif;
+  }
+  #sterbe-map{
+    background:white;
+    width: 500px;
+    float: left;
+  }
+  #geburten-map{
+    background:white;
+    padding-left:  50%;
+    height: 100%;
+    width: 500px;
+    float: rigth;
+  }
+  .geburten-daten{
+    position: absolute;
+    top:3em;
+   	left:4em;
+    z-index:8;
+    background:rgba(0,0,0,.75);
+    color:white;
+    padding:.5em .75em;
+    font-size:.85em;
+    display:none;
+  }
+  .sterbe-daten{
+    position: absolute;
+    top:2em;
+   	left:4em;
+    z-index:6;
+    background:rgba(0,0,0,.75);
+    color:white;
+    padding:.5em .75em;
+    font-size:.85em;
+    display:none;
+  }
+</style>
+</head>
+<body>
+  <span>
+    <div id="sterbe-map"></div>
+    <div class="sterbe-daten"></div>
+  </span>
+  <span>
+    <div id="geburten-map"></div>
+  </span>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/0.6.3/chroma.min.js"></script>
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="http://d3js.org/topojson.v1.min.js"></script>
+  <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+  <script>
+    // Copyright (c) 2013 Ryan Clark
+    // https://gist.github.com/rclark/5779673
+    L.TopoJSON = L.GeoJSON.extend({
+      addData: function(jsonData) {
+        if (jsonData.type === "Topology") {
+          for (key in jsonData.objects) {
+            geojson = topojson.feature(jsonData, jsonData.objects[key]);
+            L.GeoJSON.prototype.addData.call(this, geojson);
+          }
+        }
+        else {
+          L.GeoJSON.prototype.addData.call(this, jsonData);
+        }
+      }
+    });
+  </script>
+  <script>
+
+    (function(){
+
+    'use strict'
+    var latitude = 51.457429806, longitude = 6.68518066, zoom_level = 11;
+
+    var sterbe_map = L.map('sterbe-map',{maxZoom:11,minZoom:11, zoomControl:false }), //.addLayer(Tiles)
+      topoSterbeLayer = new L.TopoJSON(),
+      $sterbeDaten = $('.sterbe-daten'),
+      colorScale = chroma
+        .scale(['brown', 'black'])
+        .domain([0,200]);
+    L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png', {
+    	attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(sterbe_map);
+
+    sterbe_map.setView([latitude, longitude], zoom_level);
+
+    var geburten_map = L.map('geburten-map',{maxZoom:11,minZoom:11, zoomControl:false }), //.addLayer(Tiles)
+      topoGeburtenLayer = new L.TopoJSON(),
+      colorScale = chroma
+        .scale(['brown', 'black'])
+        .domain([0,163]);
+    L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png', {
+    	attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(geburten_map);
+
+    geburten_map.setView([latitude, longitude], zoom_level);
+
+    $.getJSON('map.geojson').done(addTopoGeburtenData);
+    $.getJSON('map.geojson').done(addTopoSterbeData);
+
+    function addTopoGeburtenData(topoData){
+      topoGeburtenLayer.addData(topoData);
+      topoGeburtenLayer.addTo(geburten_map);
+      topoGeburtenLayer.eachLayer(handleGeburtLayer);
+    }
+    function addTopoSterbeData(topoData){
+      topoSterbeLayer.addData(topoData);
+      topoSterbeLayer.addTo(sterbe_map);
+      topoSterbeLayer.eachLayer(handleSterbeLayer);
+    }
+
+    function handleSterbeLayer(layer){
+        var randomValue = Math.random(),
+          fillColor = colorScale(layer.feature.properties.Sterben).hex();
+
+        layer.setStyle({
+          fillColor : fillColor,
+          fillOpacity: 1,
+          color:'#555',
+          weight:1,
+          opacity:.5
+        });
+
+        layer.on({
+          mouseover : enterSterbeLayer,
+          mouseout: leaveSterbeLayer
+        });
+    }
+
+    function handleGeburtLayer(layer){
+        var randomValue = Math.random(),
+          fillColor = colorScale(layer.feature.properties.Geburten).hex();
+
+        layer.setStyle({
+          fillColor : fillColor,
+          fillOpacity: 1,
+          color:'#555',
+          weight:1,
+          opacity:.5
+        });
+
+        layer.on({
+          mouseover : enterSterbeLayer,
+          mouseout: leaveSterbeLayer
+        });
+    }
+
+    function enterSterbeLayer(){
+      var layerDaten = 'In ' + this.feature.properties.BEZIRKSBEZ +' starben 2014: ' +this.feature.properties.Sterben + ' Personen. Geburten gab es ' +this.feature.properties.Geburten;
+      $sterbeDaten.text(layerDaten).show();
+
+      this.bringToFront();
+      this.setStyle({
+        weight:2,
+        opacity: 1
+      });
+    }
+
+    function leaveSterbeLayer(){
+      $sterbeDaten.hide();
+      this.bringToBack();
+      this.setStyle({
+        weight:1,
+        opacity:.5
+      });
+    }
+
+    }());
+  </script>
+</body>
+</html>
