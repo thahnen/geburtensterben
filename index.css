@@ -5,28 +5,26 @@
     -moz-box-sizing:border-box;
     box-sizing:border-box;
 }
-body,html,#sterbe-map{
+body,html{
     height:100%;
 }
 body{
     color:#333;
     font-family:sans-serif;
 }
-h1, h3 {
+h1, h3, #unterueber1, #unterueber2 {
     text-align: center;
 }
-#sterbe-map{
+#sterbe-map, #geburten-map{
     border: thin solid black;
     background:white;
-    /*padding-right: 50%;*/
     height: 100%;
     width: 50%;
     float: left;
 }
-#geburten-map{
-    border: thin solid black;
-    background:white;
-    /*padding-left: 50%;*/
+#sterbe-map-info, #geburten-map-info{
+    border: none;
+    background: white;
     height: 100%;
     width: 50%;
     float: right;

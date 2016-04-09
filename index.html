@@ -9,19 +9,33 @@
 </head>
 <body>
   <h1>Geburten- und Sterberaten in Moers für 2014</h1>
-  <h3><br>Die linke Karte behandelt die Sterberate, die rechte die Geburtenrate.</h3>
-  <h3>Jeweils Todesfälle oder Geburten pro Einwohnerzahl und dann jeweilige Rate.</h3>
+  <p id="unterueber1"><br>Die erste Karte behandelt die Sterberate, die zweite die Geburtenrate.</p>
+  <p id="unterueber2">Es sind jeweils einzelne Informationen zu den Daten vorhanden.</p>
   <span>
     <div id="sterbe-map"></div>
     <div class="sterbe-daten"></div>
   </span>
   <span>
+    <div id="sterbe-map-info">
+        <h3 id="bezirk1"></h3>
+        <h3 id="einwohner1"></h3>
+        <h3 id="szahl"></h3>
+    </div>
+  </span>
+  <span>
     <div id="geburten-map"></div>
     <div class="geburten-daten"></div>
   </span>
-    <h3>Überhaupt nicht schön, geht auch noch effizienter.</h3>
-    <h3>Erstellt von Tobias Hahnen (<a href="https://github.com/thahnen">@thahnen</a>)</h3>
-    <h3>Forked von <a href="https://github.com/codeforcologne/geburtensterben">CodeForCologne</a></h3>
+  <span>
+    <div id="geburten-map-info">
+        <h3 id="bezirk2"></h3>
+        <h3 id="einwohner2"></h3>
+        <h3 id="gzahl"></h3>
+    </div>
+  </span>
+  <h3>Überhaupt nicht schön, geht auch noch effizienter.</h3>
+  <h3>Erstellt von Tobias Hahnen (<a href="https://github.com/thahnen">@thahnen</a>)</h3>
+  <h3>Forked von <a href="https://github.com/codeforcologne/geburtensterben">CodeForCologne</a></h3>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/0.6.3/chroma.min.js"></script>
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <script src="http://d3js.org/topojson.v1.min.js"></script>
@@ -46,7 +60,7 @@
     (function(){
 
     'use strict'
-    var latitude = 51.457429806, longitude = /*6.68518066*/6.61918066, zoom_level = 12;
+    var latitude = 51.457429806, longitude = 6.61918066, zoom_level = 12;
     
     /*  -----------------------
         Einrichtung Sterbekarte
@@ -64,9 +78,7 @@
     }).addTo(sterbe_map);
 
     sterbe_map.setView([latitude, longitude], zoom_level);
-    sterbe_map.once("focus", function() {
-        sterbe_map.scrollWheelZoom.disable();
-    });
+    sterbe_map.once("focus", function() { sterbe_map.scrollWheelZoom.disable(); });
     sterbe_map.on("mouseover", function() {
         if (sterbe_map.scrollWheelZoom.enabled()) {
             sterbe_map.scrollWheelZoom.disable();
@@ -84,16 +96,14 @@
       topoGeburtenLayer = new L.TopoJSON(),
       $geburtenDaten = $('.geburten-daten'),
       colorScale = chroma
-        .scale(['brown', 'black'])
+        .scale(['white', 'green']) //eigentlich brown-black aber beides wird white-green
         .domain([0,163]);
     L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png', {
     	attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(geburten_map);
 
     geburten_map.setView([latitude, longitude], zoom_level);
-    geburten_map.once("focus", function() {
-        geburten_map.scrollWheelZoom.disable();
-    });
+    geburten_map.once("focus", function() { geburten_map.scrollWheelZoom.disable(); });
     geburten_map.on("mouseover", function() {
         if (geburten_map.scrollWheelZoom.enabled()) {
             geburten_map.scrollWheelZoom.disable();
@@ -123,8 +133,7 @@
         Sterberaten-Karte
         -----------------   */
     function handleSterbeLayer(layer){
-        var randomValue = Math.random(),
-          fillColor = colorScale(layer.feature.properties.Sterben).hex();
+        var fillColor = colorScale(layer.feature.properties.Sterben).hex();
 
         layer.setStyle({
           fillColor : fillColor,
@@ -135,32 +144,37 @@
         });
 
         layer.on({
-          mouseover : enterSterbeLayer,
-          mouseout: leaveSterbeLayer
+          mouseover : updateInfoS,
+          mouseout: normalizeInfoS,
+          mousedown: popUpInfoS
         });
     }
     
-    function enterSterbeLayer(){
+    function popUpInfoS() {
       var sterberate = ((this.feature.properties.Sterben/this.feature.properties.Einwohner)*100).toFixed(2);
-      var layerDaten = 'In ' + this.feature.properties.BEZIRKSBEZ +' gab es ' +this.feature.properties.Sterben + ' Todesfälle bei ' +this.feature.properties.Einwohner + ' Einwohnern. Die Sterberate liegt bei ' + sterberate + '%.';
-      $sterbeDaten.text(layerDaten).show();
-
-      this.bringToFront();
-      this.setStyle({ weight:2, opacity: 1 });
-    }
-
-    function leaveSterbeLayer(){
-      $sterbeDaten.hide();
-      this.bringToBack();
-      this.setStyle({ weight:1, opacity:.5 });
+      var layerDaten = 'In ' + this.feature.properties.BEZIRKSBEZ +' gab es ' +this.feature.properties.Sterben + ' Todesfälle.\nDort leben ' +this.feature.properties.Einwohner + ' Einwohner.\nDie Sterberate liegt bei ' + sterberate + '%.';
+      alert(layerDaten);
     }
         
+    function updadteInfoS() {
+        document.getElementById("bezirk1").innerHTML = "Generelle Informationen zum Stadtteil " +this.feature.properties.BEZIRKSBEZ;
+        document.getElementById("einwohner1").innerHTML = "Einwohnerzahl: " +this.feature.properties.Einwohner;
+        document.getElementById("szahl").innerHTML = "Sterbezahl: " +this.feature.properties.Sterben;
+        
+        this.bringToFront();
+        this.setStyle({ weight:2, opacity: 1});
+    }
+    
+    function normalizeInfoS() {
+        this.bringToBack();
+        this.setStyle({ weight:1, opacity:.5});
+    }
+    
     /*  ------------------
         Geburtenrate-Karte
         ------------------  */
     function handleGeburtLayer(layer){
-        var randomValue = Math.random(),
-          fillColor = colorScale(layer.feature.properties.Geburten).hex();
+        var fillColor = colorScale(layer.feature.properties.Geburten).hex();
 
         layer.setStyle({
           fillColor : fillColor,
@@ -171,24 +185,30 @@
         });
         
         layer.on({
-          mouseover : enterGeburtenLayer,
-          mouseout: leaveGeburtenLayer
+          mouseover : updateInfoG,
+          mouseout: normalizeInfoG,
+          mousedown: popUpInfoG
         });
     }
-    
-    function enterGeburtenLayer() {
+        
+    function popUpInfoG() {
       var geburtenrate = ((this.feature.properties.Geburten / this.feature.properties.Einwohner)*100).toFixed(2);
-      var layerDaten = 'In ' + this.feature.properties.BEZIRKSBEZ + ' gab es ' +this.feature.properties.Geburten +' Geburten bei ' +this.feature.properties.Einwohner + ' Einwohnern. Die Geburtenrate liegt bei ' + geburtenrate + '%.';
-      $geburtenDaten.text(layerDaten).show();
-
-      this.bringToFront();
-      this.setStyle({ weight:2, opacity: 1 });
+      var layerDaten = 'In ' + this.feature.properties.BEZIRKSBEZ + ' gab es ' +this.feature.properties.Geburten +' Geburten.\nDort leben ' +this.feature.properties.Einwohner + ' Einwohner.\nDie Geburtenrate liegt bei ' + geburtenrate + '%.';
+      alert(layerDaten);
     }
     
-    function leaveGeburtenLayer() {
-      $geburtenDaten.hide();
-      this.bringToBack();
-      this.setStyle({ weight:1, opacity:.5 });
+    function updateInfoG() {
+        document.getElementById("bezirk2").innerHTML = "Generelle Informationen zum Stadtteil " +this.feature.properties.BEZIRKSBEZ;
+        document.getElementById("einwohner2").innerHTML = "Einwohnerzahl: " +this.feature.properties.Einwohner;
+        document.getElementById("gzahl").innerHTML = "Geburtenzahl: " +this.feature.properties.Geburten;
+        
+        this.bringToFront();
+        this.setStyle({ weight:2, opacity: 1});
+    }
+    
+    function normalizeInfoG() {
+        this.bringToBack();
+        this.setStyle({ weight:1, opacity:.5});
     }
     
     }());
