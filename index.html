@@ -3,17 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="author" content="Tobias Hahnen">
-  <title>Geburten und Sterbefälle in Moers für 2014</title>
-  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+  <title>Geburten und Sterbefälle in Moers</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/0.6.3/chroma.min.js"></script>
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="http://d3js.org/topojson.v1.min.js"></script>
+  <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
   <link rel="stylesheet" href="index.css"/>
 </head>
 <body onload="fillIn()">
-  <h1>Geburten- und Sterberaten in Moers für 2014</h1>
-  <p id="unterueber1"><br>Die erste Karte behandelt die Sterberate, die zweite die Geburtenrate.</p>
-  <p id="unterueber2">Es sind jeweils einzelne Informationen zu den Daten vorhanden.</p>
+  <h1>Geburten- und Sterberaten sowie Zusatzinformationen in Moers</h1>
+  <p id="unterueber1"><br>Die erste Karte behandelt die Sterbeziffern, die zweite die Geburtenziffern.</p>
+  <p id="unterueber2">Es sind jeweils weitere Informationen zu den Daten angegeben.</p>
   <span>
     <div id="sterbe-map"></div>
-    <div class="sterbe-daten"></div>
   </span>
   <span>
     <div id="sterbe-map-info">
@@ -25,7 +28,6 @@
   </span>
   <span>
     <div id="geburten-map"></div>
-    <div class="geburten-daten"></div>
   </span>
   <span>
     <div id="geburten-map-info">
@@ -38,10 +40,6 @@
   <h3>Überhaupt nicht schön, geht auch noch effizienter.</h3>
   <h3>Erstellt von Tobias Hahnen (<a href="https://github.com/thahnen">@thahnen</a>)</h3>
   <h3>Forked von <a href="https://github.com/codeforcologne/geburtensterben">CodeForCologne</a></h3>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/0.6.3/chroma.min.js"></script>
-  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-  <script src="http://d3js.org/topojson.v1.min.js"></script>
-  <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
   <script>
     function fillIn() {
         document.getElementById("bezirk1").innerHTML = document.getElementById("bezirk2").innerHTML = "Generelle Informationen zu Moers";
@@ -155,14 +153,14 @@
 
         layer.on({
           mouseover : updateInfoS,
-          mouseout: normalizeInfoS,
+          mouseout: normalizeInfoSG,
           mousedown: popUpInfoS
         });
     }
     
     function popUpInfoS() {
       var sterberate = ((this.feature.properties.Sterben/this.feature.properties.Einwohner)*100).toFixed(2);
-      var layerDaten = 'In ' + this.feature.properties.BEZIRKSBEZ +' gab es ' +this.feature.properties.Sterben + ' Todesfälle.\nDort leben ' +this.feature.properties.Einwohner + ' Einwohner.\nDie Sterberate liegt bei ' + sterberate + '%.';
+      var layerDaten = 'In ' +this.feature.properties.BEZIRKSBEZ +' gab es ' +this.feature.properties.Sterben + ' Todesfälle.\nDort leben ' +this.feature.properties.Einwohner + ' Einwohner.\nDie Sterberate liegt bei ' + sterberate + '%.';
       alert(layerDaten);
     }
         
@@ -170,13 +168,13 @@
         document.getElementById("bezirk1").innerHTML = "Generelle Informationen zum Stadtbezirk " +this.feature.properties.BEZIRKSBEZ;
         document.getElementById("einwohner1").innerHTML = "Einwohnerzahl: " +this.feature.properties.Einwohner;
         document.getElementById("szahl").innerHTML = "Sterbezahl: " +this.feature.properties.Sterben;
-        document.getElementById("srate").innerHTML = "Sterberate: " +((this.feature.properties.Sterben/this.feature.properties.Einwohner)*100).toFixed(2);
+        document.getElementById("srate").innerHTML = "Sterberate: " +((this.feature.properties.Sterben/this.feature.properties.Einwohner)*100).toFixed(2) + "%";
         
         this.bringToFront();
         this.setStyle({ weight:2, opacity: 1});
     }
     
-    function normalizeInfoS() {
+    function normalizeInfoSG() {
         fillIn();
         this.bringToBack();
         this.setStyle({ weight:1, opacity:.5});
@@ -189,7 +187,7 @@
         var fillColor = colorScale(layer.feature.properties.Geburten).hex();
 
         layer.setStyle({
-          fillColor : fillColor,
+            fillColor : fillColor,
             fillOpacity: 1,
             color:'#555',
             weight:1,
@@ -198,14 +196,14 @@
         
         layer.on({
           mouseover : updateInfoG,
-          mouseout: normalizeInfoG,
+          mouseout: normalizeInfoSG,
           mousedown: popUpInfoG
         });
     }
         
     function popUpInfoG() {
       var geburtenrate = ((this.feature.properties.Geburten / this.feature.properties.Einwohner)*100).toFixed(2);
-      var layerDaten = 'In ' + this.feature.properties.BEZIRKSBEZ + ' gab es ' +this.feature.properties.Geburten +' Geburten.\nDort leben ' +this.feature.properties.Einwohner + ' Einwohner.\nDie Geburtenrate liegt bei ' + geburtenrate + '%.';
+      var layerDaten = 'In ' +this.feature.properties.BEZIRKSBEZ + ' gab es ' +this.feature.properties.Geburten +' Geburten.\nDort leben ' +this.feature.properties.Einwohner + ' Einwohner.\nDie Geburtenrate liegt bei ' + geburtenrate + '%.';
       alert(layerDaten);
     }
     
@@ -213,16 +211,10 @@
         document.getElementById("bezirk2").innerHTML = "Generelle Informationen zum Stadtbezirk " +this.feature.properties.BEZIRKSBEZ;
         document.getElementById("einwohner2").innerHTML = "Einwohnerzahl: " +this.feature.properties.Einwohner;
         document.getElementById("gzahl").innerHTML = "Geburtenzahl: " +this.feature.properties.Geburten;
-        document.getElementById("grate").innerHTML = "Geburtenrate: " +((this.feature.properties.Geburten / this.feature.properties.Einwohner)*100).toFixed(2);
+        document.getElementById("grate").innerHTML = "Geburtenrate: " +((this.feature.properties.Geburten / this.feature.properties.Einwohner)*100).toFixed(2) + "%";
         
         this.bringToFront();
         this.setStyle({ weight:2, opacity: 1});
-    }
-    
-    function normalizeInfoG() {
-        fillIn();
-        this.bringToBack();
-        this.setStyle({ weight:1, opacity:.5});
     }
     
     }());

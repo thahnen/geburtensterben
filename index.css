@@ -29,25 +29,3 @@ h1, h3, #unterueber1, #unterueber2 {
     width: 50%;
     float: right;
 }
-.geburten-daten{
-    position: absolute;
-    top:2em;
-   	left:50em;
-    z-index:8;
-    background:rgba(0,0,0,.75);
-    color:white;
-    padding:.5em .75em;
-    font-size:.85em;
-    display:none;
-}
-.sterbe-daten{
-    position: absolute;
-    top:2em;
-   	left:3em;
-    z-index:6;
-    background:rgba(0,0,0,.75);
-    color:white;
-    padding:.5em .75em;
-    font-size:.85em;
-    display:none;
-}
