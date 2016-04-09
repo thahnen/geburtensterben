@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
   <link rel="stylesheet" href="index.css"/>
 </head>
-<body>
+<body onload="fillIn()">
   <h1>Geburten- und Sterberaten in Moers für 2014</h1>
   <p id="unterueber1"><br>Die erste Karte behandelt die Sterberate, die zweite die Geburtenrate.</p>
   <p id="unterueber2">Es sind jeweils einzelne Informationen zu den Daten vorhanden.</p>
@@ -20,6 +20,7 @@
         <h3 id="bezirk1"></h3>
         <h3 id="einwohner1"></h3>
         <h3 id="szahl"></h3>
+        <h3 id="srate"></h3>
     </div>
   </span>
   <span>
@@ -31,6 +32,7 @@
         <h3 id="bezirk2"></h3>
         <h3 id="einwohner2"></h3>
         <h3 id="gzahl"></h3>
+        <h3 id="grate"></h3>
     </div>
   </span>
   <h3>Überhaupt nicht schön, geht auch noch effizienter.</h3>
@@ -39,8 +41,17 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/0.6.3/chroma.min.js"></script>
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <script src="http://d3js.org/topojson.v1.min.js"></script>
-    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+  <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
   <script>
+    function fillIn() {
+        document.getElementById("bezirk1").innerHTML = document.getElementById("bezirk2").innerHTML = "Generelle Informationen zu Moers";
+        document.getElementById("einwohner1").innerHTML = document.getElementById("einwohner2").innerHTML = "Einwohnerzahl : 106.252";
+        document.getElementById("szahl").innerHTML = "Sterbezahl: -";
+        document.getElementById("gzahl").innerHTML = "Geburtenzahl: -";
+        document.getElementById("srate").innerHTML = "Sterberate: -";
+        document.getElementById("grate").innerHTML = "Geburtenrate: -"
+    }
+    
     L.TopoJSON = L.GeoJSON.extend({
       addData: function(jsonData) {
         if (jsonData.type === "Topology") {
@@ -48,8 +59,7 @@
             geojson = topojson.feature(jsonData, jsonData.objects[key]);
             L.GeoJSON.prototype.addData.call(this, geojson);
           }
-        }
-        else {
+        } else {
           L.GeoJSON.prototype.addData.call(this, jsonData);
         }
       }
@@ -67,7 +77,7 @@
         ----------------------- */
     var sterbe_map = L.map('sterbe-map',{
         maxZoom:zoom_level,minZoom:zoom_level, zoomControl:false, dragging:false, zoomControl: false
-    }), //.addLayer(Tiles)
+    }),
       topoSterbeLayer = new L.TopoJSON(),
       $sterbeDaten = $('.sterbe-daten'),
       colorScale = chroma
@@ -92,7 +102,7 @@
         -------------------------   */
     var geburten_map = L.map('geburten-map',{
         maxZoom:zoom_level,minZoom:zoom_level, zoomControl:false, dragging:false, zoomControl: false
-    }), //.addLayer(Tiles)
+    }),
       topoGeburtenLayer = new L.TopoJSON(),
       $geburtenDaten = $('.geburten-daten'),
       colorScale = chroma
@@ -156,16 +166,18 @@
       alert(layerDaten);
     }
         
-    function updadteInfoS() {
-        document.getElementById("bezirk1").innerHTML = "Generelle Informationen zum Stadtteil " +this.feature.properties.BEZIRKSBEZ;
+    function updateInfoS() {
+        document.getElementById("bezirk1").innerHTML = "Generelle Informationen zum Stadtbezirk " +this.feature.properties.BEZIRKSBEZ;
         document.getElementById("einwohner1").innerHTML = "Einwohnerzahl: " +this.feature.properties.Einwohner;
         document.getElementById("szahl").innerHTML = "Sterbezahl: " +this.feature.properties.Sterben;
+        document.getElementById("srate").innerHTML = "Sterberate: " +((this.feature.properties.Sterben/this.feature.properties.Einwohner)*100).toFixed(2);
         
         this.bringToFront();
         this.setStyle({ weight:2, opacity: 1});
     }
     
     function normalizeInfoS() {
+        fillIn();
         this.bringToBack();
         this.setStyle({ weight:1, opacity:.5});
     }
@@ -198,15 +210,17 @@
     }
     
     function updateInfoG() {
-        document.getElementById("bezirk2").innerHTML = "Generelle Informationen zum Stadtteil " +this.feature.properties.BEZIRKSBEZ;
+        document.getElementById("bezirk2").innerHTML = "Generelle Informationen zum Stadtbezirk " +this.feature.properties.BEZIRKSBEZ;
         document.getElementById("einwohner2").innerHTML = "Einwohnerzahl: " +this.feature.properties.Einwohner;
         document.getElementById("gzahl").innerHTML = "Geburtenzahl: " +this.feature.properties.Geburten;
+        document.getElementById("grate").innerHTML = "Geburtenrate: " +((this.feature.properties.Geburten / this.feature.properties.Einwohner)*100).toFixed(2);
         
         this.bringToFront();
         this.setStyle({ weight:2, opacity: 1});
     }
     
     function normalizeInfoG() {
+        fillIn();
         this.bringToBack();
         this.setStyle({ weight:1, opacity:.5});
     }
