@@ -5,27 +5,46 @@
     -moz-box-sizing:border-box;
     box-sizing:border-box;
 }
-body,html{
+body,html {
     height:100%;
 }
-body{
+body {
     color:#333;
     font-family:sans-serif;
 }
-h1, h3, #unterueber1, #unterueber2 {
+h1, .downunder, #unterueber1, #unterueber2 {
     text-align: center;
 }
-#sterbe-map, #geburten-map{
+#sterbe-map, #geburten-map {
     border: thin solid black;
     background:white;
     height: 100%;
     width: 50%;
     float: left;
 }
-#sterbe-map-info, #geburten-map-info{
+#map-info {
     border: none;
-    background: white;
-    height: 100%;
+    height: 200%;
     width: 50%;
     float: right;
+}
+/*#map-info:after {
+    content: ' ';
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    opacity: 0.5;
+    background-image: url("logo-moers-phil-02.svg");
+    background-repeat: no-repeat;
+    background-size: auto;
+    position: fixed;
+}*/
+.info {
+    border: thick solid black;
+    height: 50%;
+    width: 30%;
+    float: right;
+    margin-top: 15%;
+    margin-left: 10%;
+    position: fixed;
 }

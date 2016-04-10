@@ -11,44 +11,53 @@
   <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
   <link rel="stylesheet" href="index.css"/>
 </head>
-<body onload="fillIn()">
-  <h1>Geburten- und Sterberaten sowie Zusatzinformationen in Moers</h1>
-  <p id="unterueber1"><br>Die erste Karte behandelt die Sterbeziffern, die zweite die Geburtenziffern.</p>
-  <p id="unterueber2">Es sind jeweils weitere Informationen zu den Daten angegeben.</p>
+<body>
+  <!--<span>
+      <div style="float:right;width:50%;">
+        <h1>Geburten- und Sterberaten sowie Zusatzinformationen in Moers (2014)</h1>
+        <p id="unterueber1"><br>Die erste Karte behandelt die Sterbeziffern, die zweite die Geburtenziffern.</p>
+        <p id="unterueber2">Es sind jeweils weitere Informationen zu den Daten angegeben.</p>
+      </div>
+  </span>-->
   <span>
     <div id="sterbe-map"></div>
   </span>
   <span>
-    <div id="sterbe-map-info">
-        <h3 id="bezirk1"></h3>
-        <h3 id="einwohner1"></h3>
-        <h3 id="szahl"></h3>
-        <h3 id="srate"></h3>
+    <div id="map-info">
+        <div id=map-info-scroll>
+            <div style="position:fixed;">
+                <h1>Geburten- und Sterberaten sowie Zusatzinformationen in Moers (2014)</h1>
+                <p id="unterueber1"><br>Die erste Karte behandelt die Sterbeziffern, die zweite die Geburtenziffern.</p>
+                <p id="unterueber2">Es sind jeweils weitere Informationen zu den Daten angegeben.</p>
+            </div>
+            <div class="info">
+                <h3 id="bezirk"></h3>
+                <h4 id="einwohner"></h4>
+                <h4 id="szahl_gzahl"></h4>
+                <h4 id="srate_grate"></h4>
+                <h4 id="einrichtungen"></h4>
+            </div>
+        </div>
     </div>
   </span>
   <span>
     <div id="geburten-map"></div>
   </span>
-  <span>
-    <div id="geburten-map-info">
-        <h3 id="bezirk2"></h3>
-        <h3 id="einwohner2"></h3>
-        <h3 id="gzahl"></h3>
-        <h3 id="grate"></h3>
-    </div>
+  <span style="float:left">
+    <h3 class="downunder">Überhaupt nicht schön, geht auch noch effizienter.</h3>
+    <h3 class="downunder">Erstellt von Tobias Hahnen (<a href="https://github.com/thahnen">@thahnen</a>)</h3>
+    <h3 class="downunder">Forked von <a href="https://github.com/codeforcologne/geburtensterben">CodeForCologne</a></h3>
   </span>
-  <h3>Überhaupt nicht schön, geht auch noch effizienter.</h3>
-  <h3>Erstellt von Tobias Hahnen (<a href="https://github.com/thahnen">@thahnen</a>)</h3>
-  <h3>Forked von <a href="https://github.com/codeforcologne/geburtensterben">CodeForCologne</a></h3>
   <script>
     function fillIn() {
-        document.getElementById("bezirk1").innerHTML = document.getElementById("bezirk2").innerHTML = "Generelle Informationen zu Moers";
-        document.getElementById("einwohner1").innerHTML = document.getElementById("einwohner2").innerHTML = "Einwohnerzahl : 106.252";
-        document.getElementById("szahl").innerHTML = "Sterbezahl: -";
-        document.getElementById("gzahl").innerHTML = "Geburtenzahl: -";
-        document.getElementById("srate").innerHTML = "Sterberate: -";
-        document.getElementById("grate").innerHTML = "Geburtenrate: -"
+        document.getElementById("bezirk").innerHTML = "Generelle Informationen zu Moers";
+        document.getElementById("einwohner").innerHTML = "Einwohnerzahl : 106.252";
+        document.getElementById("szahl_gzahl").innerHTML = "Sterbezahl bzw. Geburtenzahl: -";
+        document.getElementById("srate_grate").innerHTML = "Sterberate bzw. Geburtenrate: -";
+        document.getElementById("einrichtungen").innerHTML = "Einrichtungen: -";
     }
+    
+    window.onload = fillIn();
     
     L.TopoJSON = L.GeoJSON.extend({
       addData: function(jsonData) {
@@ -165,10 +174,26 @@
     }
         
     function updateInfoS() {
-        document.getElementById("bezirk1").innerHTML = "Generelle Informationen zum Stadtbezirk " +this.feature.properties.BEZIRKSBEZ;
-        document.getElementById("einwohner1").innerHTML = "Einwohnerzahl: " +this.feature.properties.Einwohner;
-        document.getElementById("szahl").innerHTML = "Sterbezahl: " +this.feature.properties.Sterben;
-        document.getElementById("srate").innerHTML = "Sterberate: " +((this.feature.properties.Sterben/this.feature.properties.Einwohner)*100).toFixed(2) + "%";
+        document.getElementById("bezirk").innerHTML = "Generelle Informationen zum Stadtbezirk " +this.feature.properties.BEZIRKSBEZ;
+        document.getElementById("einwohner").innerHTML = "Einwohnerzahl: " +this.feature.properties.Einwohner;
+        document.getElementById("szahl_gzahl").innerHTML = "Sterbezahl: " +this.feature.properties.Sterben;
+        document.getElementById("srate_grate").innerHTML = "Sterberate: " +((this.feature.properties.Sterben/this.feature.properties.Einwohner)*100).toFixed(2) + "%";
+        if (this.feature.properties.spheime.length > 0) {
+            if (this.feature.properties.spheime.indexOf(",") !== -1) {
+                var array = this.feature.properties.spheime.split(",");
+                var innerstring = "Einrichtungen: ";
+                for (var i = 0, len = array.length; i < len; i++) {
+                    if (i == len-1) {
+                        innerstring += array[i];
+                    } else {
+                        innerstring += array[i] + ", ";
+                    }
+                }
+                document.getElementById("einrichtungen").innerHTML = innerstring;
+            } else {
+                document.getElementById("einrichtungen").innerHTML = "Einrichtung: " +this.feature.properties.spheime;
+            }
+        }
         
         this.bringToFront();
         this.setStyle({ weight:2, opacity: 1});
@@ -201,17 +226,33 @@
         });
     }
         
-    function popUpInfoG() {
+    function popUpInfoG() { // noch Krankenhäuser anpassen
       var geburtenrate = ((this.feature.properties.Geburten / this.feature.properties.Einwohner)*100).toFixed(2);
       var layerDaten = 'In ' +this.feature.properties.BEZIRKSBEZ + ' gab es ' +this.feature.properties.Geburten +' Geburten.\nDort leben ' +this.feature.properties.Einwohner + ' Einwohner.\nDie Geburtenrate liegt bei ' + geburtenrate + '%.';
       alert(layerDaten);
     }
     
     function updateInfoG() {
-        document.getElementById("bezirk2").innerHTML = "Generelle Informationen zum Stadtbezirk " +this.feature.properties.BEZIRKSBEZ;
-        document.getElementById("einwohner2").innerHTML = "Einwohnerzahl: " +this.feature.properties.Einwohner;
-        document.getElementById("gzahl").innerHTML = "Geburtenzahl: " +this.feature.properties.Geburten;
-        document.getElementById("grate").innerHTML = "Geburtenrate: " +((this.feature.properties.Geburten / this.feature.properties.Einwohner)*100).toFixed(2) + "%";
+        document.getElementById("bezirk").innerHTML = "Generelle Informationen zum Stadtbezirk " +this.feature.properties.BEZIRKSBEZ;
+        document.getElementById("einwohner").innerHTML = "Einwohnerzahl: " +this.feature.properties.Einwohner;
+        document.getElementById("szahl_gzahl").innerHTML = "Geburtenzahl: " +this.feature.properties.Geburten;
+        document.getElementById("srate_grate").innerHTML = "Geburtenrate: " +((this.feature.properties.Geburten / this.feature.properties.Einwohner)*100).toFixed(2) + "%";
+        if (this.feature.properties.khaeuser.length > 0) {
+            if (this.feature.properties.khaeuser.indexOf(",") !== -1) {
+                var array = this.feature.properties.khaeuser.split(",");
+                var innerstring = "Einrichtungen: ";
+                for (var i = 0, len = array.length; i < len; i++) {
+                    if (i == len-1) {
+                        innerstring += array[i];
+                    } else {
+                        innerstring += array[i] + "\n";
+                    }
+                }
+                document.getElementById("einrichtungen").innerHTML = innerstring;
+            } else {
+                document.getElementById("einrichtungen").innerHTML = "Einrichtung: " +this.feature.properties.khaeuser;
+            }
+        }
         
         this.bringToFront();
         this.setStyle({ weight:2, opacity: 1});
